@@ -1,0 +1,10 @@
+data/
+saved_models/
+mlruns/
+__pycache__/
+*.pyc
+.env
+*.joblib
+reports/figures/*.png
+.ipynb_checkpoints/
+.venv/

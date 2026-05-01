@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FraudShield — AI Fraud Detection</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface2: #1a1a26;
+    --border: #2a2a40;
+    --accent: #00f5a0;
+    --accent2: #00d4ff;
+    --danger: #ff4757;
+    --warning: #ffa502;
+    --text: #e8e8f0;
+    --muted: #6b6b8a;
+    --font-head: 'Syne', sans-serif;
+    --font-mono: 'Space Mono', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-mono);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,245,160,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,245,160,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Glow orbs */
+  .orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    z-index: 0;
+    animation: float 8s ease-in-out infinite;
+  }
+  .orb1 { width: 400px; height: 400px; background: rgba(0,245,160,0.07); top: -100px; left: -100px; }
+  .orb2 { width: 300px; height: 300px; background: rgba(0,212,255,0.06); bottom: -50px; right: -50px; animation-delay: -4s; }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-30px); }
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 24px;
+  }
+
+  /* Header */
+  header {
+    text-align: center;
+    margin-bottom: 48px;
+    animation: slideDown 0.6s ease forwards;
+  }
+
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .logo-icon {
+    width: 48px; height: 48px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+    box-shadow: 0 0 30px rgba(0,245,160,0.3);
+  }
+
+  h1 {
+    font-family: var(--font-head);
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -1px;
+  }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 0.85rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 8px;
+  }
+
+  /* Status bar */
+  .status-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 16px;
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+    animation: pulse 2s ease infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* Main card */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 36px;
+    margin-bottom: 24px;
+    animation: fadeUp 0.6s ease 0.2s forwards;
+    opacity: 0;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .card-title {
+    font-family: var(--font-head);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .card-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Form grid */
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  label {
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  input {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    outline: none;
+    transition: all 0.2s ease;
+    width: 100%;
+  }
+
+  input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0,245,160,0.1);
+  }
+
+  input::placeholder { color: var(--muted); }
+
+  /* Special fields row */
+  .special-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  /* Button */
+  .btn {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none;
+    border-radius: 12px;
+    color: #0a0a0f;
+    font-family: var(--font-head);
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,245,160,0.3);
+  }
+
+  .btn:active { transform: translateY(0); }
+
+  .btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .btn-inner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .spinner {
+    width: 18px; height: 18px;
+    border: 2px solid rgba(0,0,0,0.3);
+    border-top-color: #000;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    display: none;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Result card */
+  .result-card {
+    display: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 36px;
+    animation: fadeUp 0.4s ease forwards;
+    margin-bottom: 24px;
+  }
+
+  .result-card.show { display: block; }
+
+  .result-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .verdict {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .verdict-icon {
+    width: 64px; height: 64px;
+    border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px;
+    flex-shrink: 0;
+  }
+
+  .verdict-icon.safe {
+    background: rgba(0,245,160,0.15);
+    border: 1px solid rgba(0,245,160,0.3);
+    box-shadow: 0 0 20px rgba(0,245,160,0.2);
+  }
+
+  .verdict-icon.fraud {
+    background: rgba(255,71,87,0.15);
+    border: 1px solid rgba(255,71,87,0.3);
+    box-shadow: 0 0 20px rgba(255,71,87,0.2);
+  }
+
+  .verdict-icon.medium {
+    background: rgba(255,165,2,0.15);
+    border: 1px solid rgba(255,165,2,0.3);
+  }
+
+  .verdict-title {
+    font-family: var(--font-head);
+    font-size: 1.8rem;
+    font-weight: 800;
+  }
+
+  .verdict-title.safe { color: var(--accent); }
+  .verdict-title.fraud { color: var(--danger); }
+  .verdict-title.medium { color: var(--warning); }
+
+  .verdict-sub {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 4px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* Risk badge */
+  .risk-badge {
+    padding: 8px 20px;
+    border-radius: 100px;
+    font-family: var(--font-head);
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+
+  .risk-LOW { background: rgba(0,245,160,0.15); color: var(--accent); border: 1px solid rgba(0,245,160,0.3); }
+  .risk-MEDIUM { background: rgba(255,165,2,0.15); color: var(--warning); border: 1px solid rgba(255,165,2,0.3); }
+  .risk-HIGH { background: rgba(255,71,87,0.15); color: var(--danger); border: 1px solid rgba(255,71,87,0.3); }
+  .risk-CRITICAL { background: rgba(255,71,87,0.25); color: var(--danger); border: 1px solid var(--danger); box-shadow: 0 0 15px rgba(255,71,87,0.3); }
+
+  /* Probability bar */
+  .prob-section { margin-bottom: 24px; }
+
+  .prob-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .prob-value {
+    font-family: var(--font-head);
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .prob-bar-bg {
+    background: var(--surface2);
+    border-radius: 100px;
+    height: 10px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  .prob-bar-fill {
+    height: 100%;
+    border-radius: 100px;
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 0%;
+  }
+
+  .prob-bar-fill.safe { background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+  .prob-bar-fill.fraud { background: linear-gradient(90deg, var(--warning), var(--danger)); }
+
+  /* Stats grid */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  .stat-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+  }
+
+  .stat-label {
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .stat-value {
+    font-family: var(--font-head);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  /* Message */
+  .result-message {
+    margin-top: 20px;
+    padding: 14px 18px;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    line-height: 1.6;
+    letter-spacing: 0.5px;
+  }
+
+  .result-message.safe { background: rgba(0,245,160,0.08); border-left: 3px solid var(--accent); color: var(--accent); }
+  .result-message.fraud { background: rgba(255,71,87,0.08); border-left: 3px solid var(--danger); color: var(--danger); }
+  .result-message.medium { background: rgba(255,165,2,0.08); border-left: 3px solid var(--warning); color: var(--warning); }
+
+  /* Error */
+  .error-box {
+    display: none;
+    background: rgba(255,71,87,0.1);
+    border: 1px solid rgba(255,71,87,0.3);
+    border-radius: 12px;
+    padding: 16px 20px;
+    color: var(--danger);
+    font-size: 0.8rem;
+    margin-bottom: 20px;
+  }
+
+  .error-box.show { display: block; }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+    padding: 20px 0;
+    animation: fadeUp 0.6s ease 0.4s forwards;
+    opacity: 0;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+
+<div class="container">
+
+  <!-- Header -->
+  <header>
+    <div class="logo">
+      <div class="logo-icon">🛡️</div>
+      <h1>FraudShield</h1>
+    </div>
+    <p class="subtitle">AI-Powered Credit Card Fraud Detection</p>
+    <div class="status-bar">
+      <div class="status-dot" id="statusDot"></div>
+      <span id="statusText">Connecting to API...</span>
+    </div>
+  </header>
+
+  <!-- Error box -->
+  <div class="error-box" id="errorBox"></div>
+
+  <!-- Input Card -->
+  <div class="card">
+    <div class="card-title">📋 Transaction Details</div>
+
+    <!-- Amount & Time -->
+    <div class="special-row">
+      <div class="field">
+        <label>Amount ($)</label>
+        <input type="number" id="Amount" placeholder="e.g. 149.62" step="0.01" min="0">
+      </div>
+      <div class="field">
+        <label>Time (seconds)</label>
+        <input type="number" id="Time" placeholder="e.g. 0" min="0">
+      </div>
+    </div>
+
+    <!-- V Features -->
+    <div class="card-title" style="font-size:0.8rem; margin-bottom:16px;">🔢 PCA Components (V1 — V28)</div>
+    <div class="form-grid" id="vFields"></div>
+
+    <button class="btn" id="predictBtn" onclick="predict()">
+      <div class="btn-inner">
+        <div class="spinner" id="spinner"></div>
+        <span id="btnText">⚡ DETECT FRAUD</span>
+      </div>
+    </button>
+  </div>
+
+  <!-- Result Card -->
+  <div class="result-card" id="resultCard">
+    <div class="card-title">🔍 Analysis Result</div>
+
+    <div class="result-header">
+      <div class="verdict">
+        <div class="verdict-icon" id="verdictIcon"></div>
+        <div>
+          <div class="verdict-title" id="verdictTitle"></div>
+          <div class="verdict-sub" id="verdictSub"></div>
+        </div>
+      </div>
+      <div class="risk-badge" id="riskBadge"></div>
+    </div>
+
+    <div class="prob-section">
+      <div class="prob-label">
+        <span>Fraud Probability</span>
+        <span class="prob-value" id="probValue"></span>
+      </div>
+      <div class="prob-bar-bg">
+        <div class="prob-bar-fill" id="probBar"></div>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-box">
+        <div class="stat-label">Threshold</div>
+        <div class="stat-value" id="statThreshold">—</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Model</div>
+        <div class="stat-value" id="statModel">—</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Risk Level</div>
+        <div class="stat-value" id="statRisk">—</div>
+      </div>
+    </div>
+
+    <div class="result-message" id="resultMessage"></div>
+  </div>
+
+  <footer>FRAUDSHIELD v1.0 &nbsp;·&nbsp; POWERED BY XGBOOST + LIGHTGBM &nbsp;·&nbsp; BUILT WITH FASTAPI</footer>
+
+</div>
+
+<script>
+const API = "http://localhost:8000";
+
+// Default example values (from a real transaction in the dataset)
+const defaults = {
+  V1:-1.3598071336738,V2:-0.0727811733098497,V3:2.53634673796914,
+  V4:1.37815522427443,V5:-0.338320769942518,V6:0.462387777762292,
+  V7:0.239598554061257,V8:0.0986979012610507,V9:0.363786969611213,
+  V10:0.0907941719789316,V11:-0.551599533260813,V12:-0.617800855762348,
+  V13:-0.991389847235408,V14:-0.311169353699879,V15:1.46817697209427,
+  V16:-0.470400525259478,V17:0.207971241929242,V18:0.0257905801869,
+  V19:0.403992960255733,V20:0.251412098239705,V21:-0.018306777944153,
+  V22:0.277837575558899,V23:-0.110473910188767,V24:0.0669280749146731,
+  V25:0.128539358273528,V26:-0.189114843888824,V27:0.133558376740387,
+  V28:-0.0210530534538215,
+  Amount:149.62, Time:0
+};
+
+// Fix the typo in defaults
+defaults.V18 = 0.0257905801869;
+
+// Generate V1-V28 input fields
+const vContainer = document.getElementById('vFields');
+for(let i = 1; i <= 28; i++) {
+  const field = document.createElement('div');
+  field.className = 'field';
+  field.innerHTML = `
+    <label>V${i}</label>
+    <input type="number" id="V${i}" placeholder="0.00" step="0.0001" value="${(defaults['V'+i] || 0).toFixed(4)}">
+  `;
+  vContainer.appendChild(field);
+}
+
+// Set default Amount and Time
+document.getElementById('Amount').value = defaults.Amount;
+document.getElementById('Time').value = defaults.Time;
+
+// Check API health on load
+async function checkHealth() {
+  try {
+    const res = await fetch(`${API}/health`);
+    const data = await res.json();
+    const dot = document.getElementById('statusDot');
+    const text = document.getElementById('statusText');
+    if(data.status === 'healthy') {
+      dot.style.background = '#00f5a0';
+      dot.style.boxShadow = '0 0 8px #00f5a0';
+      text.textContent = `API ONLINE · Model: ${data.model_name || 'loaded'}`;
+    } else {
+      dot.style.background = '#ffa502';
+      text.textContent = 'API DEGRADED — Model not loaded';
+    }
+  } catch(e) {
+    const dot = document.getElementById('statusDot');
+    dot.style.background = '#ff4757';
+    dot.style.boxShadow = '0 0 8px #ff4757';
+    document.getElementById('statusText').textContent = 'API OFFLINE — Start with: uvicorn src.api.main:app --reload';
+  }
+}
+
+async function predict() {
+  const btn = document.getElementById('predictBtn');
+  const spinner = document.getElementById('spinner');
+  const btnText = document.getElementById('btnText');
+  const errorBox = document.getElementById('errorBox');
+
+  // Hide previous results
+  errorBox.classList.remove('show');
+  document.getElementById('resultCard').classList.remove('show');
+
+  // Build payload
+  const payload = {};
+  for(let i = 1; i <= 28; i++) {
+    const val = document.getElementById(`V${i}`).value;
+    payload[`V${i}`] = parseFloat(val) || 0;
+  }
+  payload.Amount = parseFloat(document.getElementById('Amount').value) || 0;
+  payload.Time = parseFloat(document.getElementById('Time').value) || 0;
+
+  // Loading state
+  btn.disabled = true;
+  spinner.style.display = 'block';
+  btnText.textContent = 'ANALYZING...';
+
+  try {
+    const res = await fetch(`${API}/predict`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if(!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || 'API error');
+    }
+
+    const data = await res.json();
+    showResult(data);
+
+  } catch(e) {
+    errorBox.textContent = `⚠️ Error: ${e.message}`;
+    errorBox.classList.add('show');
+  } finally {
+    btn.disabled = false;
+    spinner.style.display = 'none';
+    btnText.textContent = '⚡ DETECT FRAUD';
+  }
+}
+
+function showResult(data) {
+  const isFraud = data.is_fraud;
+  const prob = data.fraud_probability;
+  const risk = data.risk_level;
+
+  // Determine tone
+  let tone = 'safe';
+  if(isFraud) tone = 'fraud';
+  else if(risk === 'MEDIUM') tone = 'medium';
+
+  // Verdict
+  const icons = { safe: '✅', fraud: '🚨', medium: '⚠️' };
+  const titles = { safe: 'LEGITIMATE', fraud: 'FRAUD DETECTED', medium: 'SUSPICIOUS' };
+  const subs = { safe: 'Transaction appears safe', fraud: 'Block this transaction immediately', medium: 'Requires manual review' };
+
+  document.getElementById('verdictIcon').className = `verdict-icon ${tone}`;
+  document.getElementById('verdictIcon').textContent = icons[tone];
+  document.getElementById('verdictTitle').className = `verdict-title ${tone}`;
+  document.getElementById('verdictTitle').textContent = titles[tone];
+  document.getElementById('verdictSub').textContent = subs[tone];
+
+  // Risk badge
+  const badge = document.getElementById('riskBadge');
+  badge.className = `risk-badge risk-${risk}`;
+  badge.textContent = risk;
+
+  // Probability bar
+  const pct = (prob * 100).toFixed(2);
+  document.getElementById('probValue').textContent = `${pct}%`;
+  const bar = document.getElementById('probBar');
+  bar.className = `prob-bar-fill ${isFraud ? 'fraud' : 'safe'}`;
+  setTimeout(() => { bar.style.width = `${pct}%`; }, 100);
+
+  // Stats
+  document.getElementById('statThreshold').textContent = data.threshold_used.toFixed(3);
+  document.getElementById('statModel').textContent = data.model_used.toUpperCase().replace('_',' ');
+  document.getElementById('statRisk').textContent = risk;
+
+  // Message
+  const msg = document.getElementById('resultMessage');
+  msg.className = `result-message ${tone}`;
+  msg.textContent = data.message;
+
+  // Show card
+  document.getElementById('resultCard').classList.add('show');
+  document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// Init
+checkHealth();
+</script>
+</body>
+</html>
