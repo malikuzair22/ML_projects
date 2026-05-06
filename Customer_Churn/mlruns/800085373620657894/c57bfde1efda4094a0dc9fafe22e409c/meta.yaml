@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/Hp/Desktop/ML_projects/Customer_Churn/mlruns/800085373620657894/c57bfde1efda4094a0dc9fafe22e409c/artifacts
+end_time: 1778079527056
+entry_point_name: ''
+experiment_id: '800085373620657894'
+lifecycle_stage: active
+run_id: c57bfde1efda4094a0dc9fafe22e409c
+run_name: Gradient Boost
+run_uuid: c57bfde1efda4094a0dc9fafe22e409c
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1778079516820
+status: 3
+tags: []
+user_id: Hp

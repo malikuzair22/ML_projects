@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/Hp/Desktop/ML_projects/Customer_Churn/mlruns/800085373620657894/7233e87ad7b0462c8e5248a85a7fc0cc/artifacts
+end_time: 1778079516804
+entry_point_name: ''
+experiment_id: '800085373620657894'
+lifecycle_stage: active
+run_id: 7233e87ad7b0462c8e5248a85a7fc0cc
+run_name: Random Forest
+run_uuid: 7233e87ad7b0462c8e5248a85a7fc0cc
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1778079514644
+status: 3
+tags: []
+user_id: Hp

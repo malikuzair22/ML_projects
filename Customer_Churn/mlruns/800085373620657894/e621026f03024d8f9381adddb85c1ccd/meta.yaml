@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/Hp/Desktop/ML_projects/Customer_Churn/mlruns/800085373620657894/e621026f03024d8f9381adddb85c1ccd/artifacts
+end_time: 1778079528331
+entry_point_name: ''
+experiment_id: '800085373620657894'
+lifecycle_stage: active
+run_id: e621026f03024d8f9381adddb85c1ccd
+run_name: LightGBM
+run_uuid: e621026f03024d8f9381adddb85c1ccd
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1778079527788
+status: 3
+tags: []
+user_id: Hp
